@@ -1,0 +1,239 @@
+/*Các loại ràng buộc thuộc về bảng dữ liệu:
+- Khoá: PRIMARY KEY(A1, A2, ...)
+        UNIQUE(A1, A2, ...)
+        FOREIGN KEY(X, Y) REFERENCES TAB
+- Miền giá trị của 1 cột: NOT NULL
+                          DEFAULT VAL
+                          CHECK(EXPRESSION)
+*/
+/* Khai báo RBTV
+ - Đặt tên cho ràng buộc [CONSTRAINT TEN_CONSTRAINT] KHAI_BAO_RBTV
+ - Cú pháp khai báo:
+    A) In-line declaration: Khai báo cùng khai báo thuộc tính 
+    - Ràng buộc đặt trên 1 thuộc tính duy nhất
+    - Dùng cho các loại: PK, UNIQUE, NOT NULL, DEFAULT, CHECK
+    Create table tabName (
+        columnA KDL PRIMARY KEY,
+        columnB KDL NOT NULL UNIQUE CHECK (EXPRESSION) ...,
+        columnC KDL DEFAULT Value CHECK(EXPRESION) ...
+    )
+
+    B) In-table declaration: Khai báo sau khi khai báo thuộc tính trong lệnh create table
+    - Ràng buộc đặt trên nhiều thuộc tính của 1 bảng hoặc nhiều bảng (FK)
+    - Dùng cho các loại: PK, UNIQUE, CHECK, FK (Lưu ý thứ tự tạo bảng)
+    Create table tabName (
+        columnA KDL,
+        columnB KDL NOT NULL,
+        columnC KDL DEFAULT VAL,
+        columnD KDL,
+        [constraint PK_tabName] PRIMARY KEY(columnA, columnC),
+        [constraint UQ_tabName_colC_colD] UNIQUE(columnC, columnD),
+        [constraint CK_tabName_colB] CHECK(columnB < columnA),
+        [constraint FK_tabName] FOREIGN KEY (colA, colB) REFERENCES TabName2
+    )
+    C) Khai báo sau khi tạo bảng (ràng buộc trên nhiều bảng)
+    - Dùng cho PK, UNIQUE, DEFAULT, CHECK, FK
+    - Cho NULL/NOT NULL sử dụng Enable/Disable
+    create table tabName ( ... )
+    ALTER TABLE ADD [constraint Ten_RBTV] KHAI_BAO_RBTV
+
+ - Vị trí có thể có cho các loại RBTV
+    + In-line: NOT NULL, DEFAULT
+              CHECK, PRIMARY KEY, UNIQUE (1 thuộc tính)
+    + In-table: CHECK, PRIMARY KEY, UNIQUE, FOREIGN KEY
+    + After table creation: CHECK, PRIMARY KEY, UNIQUE, FOREIGN KEY, DEFAULT (Alter table)
+                            NULL/NOT NULL (Alter table XXX Alter colum AAA Data-type null/not null)
+*/
+
+/*1. Tạo CSDL QLBH với các bảng sau đây*/
+/*KH(MaKH: HoTen, SoCCCD, Phai, NgayTao)
+    - MaKH là khoá chính;
+    - HoTen phải có;
+    - SoCCCD phải có và là duy nhất;
+    - Phai là Nam hay Nữ;
+    - NgayTao mặc định là ngày hiện hành*/
+CREATE DATABASE QLBH
+GO
+USE QLBH
+
+
+
+CREATE TABLE KH(
+    MaKH CHAR(5) CONSTRAINT PK_KH PRIMARY KEY, 
+    HoTen NVARCHAR(150) NOT NULL, 
+    SoCCCD CHAR(12) NOT NULL CONSTRAINT UQ_KH_SoCCCC UNIQUE, 
+    Phai NCHAR(3) CONSTRAINT CK_KH_PHAI CHECK (PHAI = N'Nam' OR PHAI = N'Nữ'), -- PHAI IN (N'Nam', N'Nữ')
+    NgayTao DATE CONSTRAINT DF_KH_NgayTao DEFAULT GETDATE()
+)
+/*SP(MaSP, TenSP, DonGia, SLTon)
+    - MaSP:CHAR(5) là khoá chính; 
+    - TenSP: NVARCHAR(...) là duy nhất và phải có;
+    - DonGia: FLOAT, DECIMAL(6,2) từ 100 đến 1000; 
+    - SLTon: INT mặc định là 0 và nằm trong khoảng 0-200; */
+
+
+
+CREATE TABLE SP(
+    MaSP CHAR(5), 
+    TenSP NVARCHAR(50) NOT NULL, 
+    DonGia DECIMAL(6, 2), -- Total number of digits: 6, Number of precision (after .): 2 
+    SLTon INT CONSTRAINT DF_SP_SLTon DEFAULT 0,
+    CONSTRAINT PK_SP PRIMARY KEY(MaSP),
+    CONSTRAINT UQ_SP_TenSP UNIQUE (TenSP),
+    CONSTRAINT CK_SP_DonGia CHECK (DonGia between 100 and 1000),
+    CONSTRAINT CK_SP_SLTon CHECK (SLTon between 0 and 200)
+)
+
+/*DH(MaDH, NgayLap, MaKH, NgayGiaoDuKien)
+    - MaDH: CHAR(5) là khoá chính; 
+    - NgayLap mặc định là ngày hiện hành; 
+    - MaKH là khoá ngoại tham chiếu đến KH;
+    - NgayGiaoDuKien phải sau NgayLap
+
+  CT_DH(MaDon, MaSP, SoLuong)
+    - (MaDon, MaSP) là khoá chính
+    - MaDon là khoá ngoại tham chiếu đến DH, MaSP là khoá ngoại tham chiếu đến SP
+    - SoLuong mặc định là 1 và phải luôn dương.
+*/
+
+
+CREATE TABLE DH(
+    MaDH CHAR(5), 
+    NgayLap DATE, 
+    MaKH CHAR(5), 
+    NgayGiaoDuKien DATE
+)
+CREATE TABLE CT_DH(
+    MaDon CHAR(5) NOT NULL, 
+    MaSP CHAR (5) NOT NULL, 
+    SoLuong INT
+)
+
+-- Thêm RBTV cho hai bảng trên
+ALTER TABLE DH ALTER COLUMN MaDH CHAR(5) NOT NULL -- Enable a nullable column 
+GO
+ALTER TABLE DH ADD CONSTRAINT PK_DH PRIMARY KEY(MaDH),
+                   CONSTRAINT DF_DH_NgayLap DEFAULT GETDATE() FOR NgayLap,
+                   CONSTRAINT CK_DH_NgayGiaoDuKien CHECK(NgayGiaoDuKien > NgayLap),
+                   CONSTRAINT FK_DH_KH FOREIGN KEY (MaKH) REFERENCES KH
+
+
+ALTER TABLE CT_DH ADD PRIMARY KEY(MaDon, MaSP),
+                      DEFAULT 1 FOR SoLuong,
+                      CHECK (SoLuong > 0),
+                      FOREIGN KEY (MaDon) REFERENCES DH,
+                      FOREIGN KEY (MaSP) REFERENCES SP
+
+
+/*2. Thêm cột TONGTIEN vào DH, THỬ CẬP NHẬT VÀ XOÁ */
+ALTER TABLE DH ADD TONGTIEN FLOAT
+
+ALTER TABLE DH ALTER COLUMN TONGTIEN DECIMAL(10, 2)
+ALTER TABLE DH DROP COLUMN TONGTIEN
+
+
+/*3. Minh hoạ thêm, xoá, sửa dữ liệu */
+-- Thứ tự: KH, SP, DH, CT_DH
+-- NHẬP LIỆU
+-- KH(MaKH, HoTen, SoCCCD, Phai, NgayTao)
+-- Nhập liệu ngày tháng: mm/dd/yyyy
+-- set dateformat dmy
+INSERT INTO KH VALUES('KH001', N'Nguyễn Văn A', '007913981111', null, '01/22/2024'),
+                     ('KH002', N'Nguyễn Văn B', '007913981112', null, null)
+
+INSERT INTO KH VALUES('KH006', N'Nguyễn Văn D', '007913981119', null, '01/22/2024')
+
+-- SP(MaSP, TenSP, DonGia, SLTon)
+INSERT INTO SP(DONGIA, MASP, TENSP) VALUES (200.20, 'SP001', N'Dầu gội'),
+                                   (500.30, 'SP002', N'Bột giặt'),
+                                   (250.50, 'SP003', N'Sữa rửa mặt')
+INSERT INTO SP VALUES('SP005', N'Túi xách', 700, 120)
+
+-- DH(MaDH, NgayLap, MaKH, NgayGiaoDuKien)
+INSERT INTO DH(MADH, MAKH) VALUES ('DH001', 'KH001')
+INSERT INTO DH(MADH, MAKH) VALUES ('DH008', 'KH010')
+
+-- CT_DH(MaDon, MaSP, SoLuong)
+INSERT INTO CT_DH VALUES('DH001', 'SP001', 3), ('DH001', 'SP002', 5)
+
+-- CẬP NHẬT DỮ LIỆU
+-- UPDATE A 
+-- SET COL1 = ..., COL2 = ... 
+-- WHERE COL3 = ...
+UPDATE DH SET NgayGiaoDuKien = DATEADD(DD, 3, NGAYLAP)
+
+UPDATE DH SET TONGTIEN = CT.SoLuong * S.DonGia 
+FROM CT_DH CT, SP S 
+WHERE CT.MASP = S.MASP AND CT.MADON = DH.MADH
+
+DELETE KH WHERE MAKH = 'KH004'
+
+-- XEM DỮ LIỆU
+SELECT * FROM DH
+SELECT * FROM CT_DH
+SELECT * FROM KH
+SELECT * FROM SP
+----------------------------------------------------------------
+/*VD2: TESTDB*/
+CREATE DATABASE TESTDB
+GO 
+USE TESTDB
+
+/* XOÁ DB
+    USE master 
+    GO
+    DROP DATABASE TESTDB -- KHÔNG THỂ XOÁ DB ĐANG ĐƯỢC SỬ DỤNG NHƯ DB HIỆN HÀNH
+*/
+-- Minh hoạ về tạo bảng và một số quy ước đặt tên ràng buộc
+create table TabA(
+    col1 int not null,
+    col2 int not null constraint df_TabA_Col2 default 2,
+    col3 char(3) constraint df_TabA_Col3 default 'ABC',
+    col4 char(3) not null,
+    col5 int,
+    constraint pk_TabA primary key(col1, col4), -- PK: (int, char(3))
+    constraint uq_TabA unique(col2, col5),
+    constraint ck_TabA_Col1 check(col1 between 1 and 1000),
+    constraint ck_TabA_Col1_5 check(col1 < col5)
+)
+
+create table TabB(
+    ID int,
+    colX int,
+    colY char(3) not null,
+    constraint fk_TabB_TabA foreign key(colX, colY) references TabA
+)
+
+-- Minh hoạ xoá bảng
+drop table tabA
+
+-- Minh hoạ thêm, xoá, sửa cột
+alter table tabA add newCol char(20) not null
+alter table tabA alter column newCol char(5) null 
+alter table tabA alter column newCol char(50) not null
+alter table tabA drop column newCol
+
+-- Minh hoạ huỷ ràng buộc, kích hoạt/vô hiệu hoá ràng buộc loại CHECK và FOREIGN KEY
+alter table tabA nocheck constraint CK_TabA_Col1, CK_TabA_Col1_5
+alter table tabA check constraint  CK_TabA_Col1, CK_TabA_Col1_5
+alter table tabB nocheck constraint fk_TabB_TabA
+alter table tabA nocheck constraint ALL -- vô hiệu hoá tất cả check và fk
+alter table tabA check constraint ALL -- kích hoạt tất cả check và fk
+
+
+-- Minh hoạ thêm/xoá ràng buộc trong 1 bảng
+alter table tabA drop constraint pk_TabA, 
+                                 uq_TabA, 
+                                 ck_TabA_Col1, ck_TabA_Col1_5,
+                                 df_TabA_Col2, df_TabA_Col3
+
+alter table tabA add primary key(col1, col4),
+                     unique(col2, col5),
+                     check(col1 between 1 and 1000),
+                     check(col1 < col5),
+                     default 2 for col2,
+                     default 'ABC' for col3
+
+
+
+-- 

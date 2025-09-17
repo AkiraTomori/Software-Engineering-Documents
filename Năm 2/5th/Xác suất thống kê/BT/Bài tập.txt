@@ -1,0 +1,3 @@
+Vào quầy giáo trình mua hai cuốn giáo trình sau:
+- Giáo trình Xác Suất Thống Kê, tác giả: Nguyễn Thị Mộng Ngọc (có thể không cần cuốn này vì hoc Slides bài giảng của giảng viên dạy lớp).
+- Giáo trình Bài Tập Xác Suất Thống Kê, tác giả: Nguyễn Thị Mộng Ngọc (BẮT BUỘC PHẢI CÓ vì có 90% bài tập là thầy cô sẽ yêu cầu làm từ cuốn này).

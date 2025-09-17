@@ -1,0 +1,361 @@
+CREATE DATABASE QLYDETAI
+GO
+USE QLYDETAI
+-- Tạo lược đồ quan hệ và khai báo khóa chính
+
+CREATE TABLE GIAOVIEN
+(
+    MAGV VARCHAR(10) NOT NULL,
+    HOTEN NVARCHAR(20),
+    LUONG INT,
+    PHAI NVARCHAR(5),
+    NGSINH DATE,
+    DIACHI NVARCHAR(50),
+    GVQLCM VARCHAR(10),
+    MABM NVARCHAR(10),
+    PRIMARY KEY (MAGV)
+)
+
+CREATE TABLE KHOA
+(
+    MAKHOA VARCHAR(10) NOT NULL,
+    TENKHOA NVARCHAR(20),
+    NAMTL INT,
+    PHONG VARCHAR(5),
+    DIENTHOAI VARCHAR(15),
+    TRUONGKHOA VARCHAR(10),
+    NGAYNHANCHUC DATE,
+    PRIMARY KEY (MAKHOA)
+)
+
+CREATE TABLE BOMON
+(
+    MABM NVARCHAR(10) NOT NULL,
+    TENBM NVARCHAR(20),
+    PHONG NVARCHAR(10),
+    DIENTHOAI VARCHAR(15),
+    TRUONGBM VARCHAR(10),
+    MAKHOA VARCHAR(10),
+    NGAYNHANCHUC DATE,
+    PRIMARY KEY (MABM)
+)
+
+CREATE TABLE GV_DT
+(
+    MAGV VARCHAR(10) NOT NULL,
+    DIENTHOAI VARCHAR(15) NOT NULL,
+    PRIMARY KEY (MAGV, DIENTHOAI)
+)
+
+CREATE TABLE NGUOITHAN
+(
+    MAGV VARCHAR(10) NOT NULL,
+    TEN NVARCHAR(20) NOT NULL,
+    NGSINH DATE,
+    PHAI NVARCHAR(5),
+    PRIMARY KEY (MAGV, TEN)
+)
+
+CREATE TABLE CHUDE
+(
+    MACD NVARCHAR(10) NOT NULL,
+    TENCD NVARCHAR(30),
+    PRIMARY KEY (MACD)
+)
+
+CREATE TABLE DETAI
+(
+    MADT NVARCHAR(10) NOT NULL,
+    TENDT NVARCHAR(50),
+    CAPQL NVARCHAR(15),
+    KINHPHI INT,
+    NGAYBD DATE,
+    NGAYKT DATE,
+    MACD NVARCHAR(10),
+    GVCNDT VARCHAR(10),
+    PRIMARY KEY (MADT)
+)
+
+CREATE TABLE CONGVIEC
+(
+    MADT NVARCHAR(10) NOT NULL,
+    STT INT NOT NULL,
+    TENCV NVARCHAR(50),
+    NGAYBD DATE,
+    NGAYKT DATE,
+    PRIMARY KEY(MADT, STT)
+)
+
+CREATE TABLE THAMGIADT
+(
+    MAGV VARCHAR(10) NOT NULL,
+    MADT NVARCHAR(10) NOT NULL,
+    STT INT NOT NULL,
+    PHUCAP FLOAT,
+    KETQUA NVARCHAR(10),
+    PRIMARY KEY(MAGV, MADT, STT)
+)
+
+-- Khai báo khóa ngoại
+-- Lược đồ GIAOVIEN
+ALTER TABLE GIAOVIEN
+ADD CONSTRAINT FK_GIAOVIEN_BOMON
+FOREIGN KEY(MABM)
+REFERENCES BOMON(MABM)
+
+ALTER TABLE GIAOVIEN
+ADD CONSTRAINT FK_GIAOVIEN_GIAOVIEN
+FOREIGN KEY(GVQLCM)
+REFERENCES GIAOVIEN(MAGV)
+
+-- Lược đồ KHOA
+ALTER TABLE KHOA
+ADD CONSTRAINT FK_KHOA_GIAOVIEN
+FOREIGN KEY(TRUONGKHOA)
+REFERENCES GIAOVIEN(MAGV)
+
+-- Lược đồ BOMON
+ALTER TABLE BOMON
+ADD CONSTRAINT FK_BOMON_KHOA
+FOREIGN KEY(MAKHOA)
+REFERENCES KHOA(MAKHOA)
+
+ALTER TABLE BOMON
+ADD CONSTRAINT FK_BOMON_GIAOVIEN
+FOREIGN KEY(TRUONGBM)
+REFERENCES GIAOVIEN(MAGV)
+
+-- Lược đồ GV_DT
+ALTER TABLE GV_DT
+ADD CONSTRAINT FK_GV_DT_GIAOVIEN
+FOREIGN KEY(MAGV)
+REFERENCES GIAOVIEN(MAGV)
+
+-- Lược đồ NGUOITHAN
+ALTER TABLE NGUOITHAN
+ADD CONSTRAINT FK_NGUOITHAN_GIAOVIEN
+FOREIGN KEY(MAGV)
+REFERENCES GIAOVIEN(MAGV)
+
+-- Lược đồ CHUDE
+-- Không có khóa ngoại
+
+-- Lược đồ DETAI
+ALTER TABLE DETAI
+ADD CONSTRAINT FK_DETAI_CHUDE
+FOREIGN KEY(MACD)
+REFERENCES CHUDE(MACD)
+
+ALTER TABLE DETAI
+ADD CONSTRAINT FK_DETAI_GIAOVIEN
+FOREIGN KEY(GVCNDT)
+REFERENCES GIAOVIEN(MAGV)
+
+-- Lược đồ CONGVIEC
+ALTER TABLE CONGVIEC
+ADD CONSTRAINT FK_CONGVIEC_DETAI
+FOREIGN KEY(MADT)
+REFERENCES DETAI(MADT)
+
+-- Lược đồ THAMGIADT
+ALTER TABLE THAMGIADT
+ADD CONSTRAINT FK_THAMGIADT_GIAOVIEN
+FOREIGN KEY(MAGV)
+REFERENCES GIAOVIEN(MAGV)
+
+ALTER TABLE THAMGIADT
+ADD CONSTRAINT FK_THAMGIADT_CONGVIEC
+FOREIGN KEY(MADT, STT)
+REFERENCES CONGVIEC(MADT, STT)
+
+-- Kết thúc khai báo khóa ngoại
+
+-- Nhập liệu cho các lược đồ quan hệ
+
+INSERT INTO GIAOVIEN(MAGV, HOTEN, LUONG, PHAI, NGSINH, DIACHI, GVQLCM, MABM) VALUES
+('001', N'Nguyễn Hoài An', 2000, N'Nam', '02-15-1973', N'25/3 Lạc Long Quân, Q.10, TP.HCM', NULL, NULL),
+('002', N'Trần Trà Hương', 2500, N'Nữ', '06-20-1960', N'125 Trần Hưng Đạo, Q.1, TP HCM', NULL, NULL),
+('003', N'Nguyễn Ngọc Ánh', 2200, N'Nữ', '05-11-1975', N'12/21 Võ Văn Ngân, Thủ Đức, TP HCM', '002', NULL),
+('004', N'Trương Nam Sơn', 2300, N'Nam', '06-20-1959', N'215 Lý Thường Kiệt, TP Biên Hòa', NULL, NULL),
+('005', N'Lý Hoàng Hà', 2500, N'Nam', '10-23-1954', N'22/5 Nguyễn Xí, Q.Bình Thạnh, TP HCM', NULL, NULL),
+('006', N'Trần Bạch Tuyết', 1500, N'Nữ', '05-20-1980', N'127 Hùng Vương, TP Mỹ Tho', '004', NULL),
+('007', N'Nguyễn An Trung', 2100, N'Nam', '06-05-1976', N'234 3/2, TP Biên Hòa', NULL, NULL),
+('008', N'Trần Trung Hiếu', 1800, N'Nam', '08-06-1976', N'22/11 Lý Thường Kiệt, TP Mỹ Tho', '007', NULL),
+('009', N'Trần Hoàng Nam', 2000, N'Nam', '11-22-1975', N'234 Trấn Não, An Phú, TP HCM', '001', NULL),
+('010', N'Phạm Nam Thanh', 1500, N'Nam', '12-12-1980', N'221 Hùng Vương, Q.5, TP HCM', '007', NULL)
+
+INSERT INTO KHOA(MAKHOA, TENKHOA, NAMTL, PHONG, DIENTHOAI, TRUONGKHOA, NGAYNHANCHUC) VALUES
+('CNTT', N'Công nghệ thông tin', 1995, 'B11', '0838123456', '002', '02-20-2005'),
+('HH', N'Hóa học', 1980, 'B41', '0838456456', '007', '10-15-2001'),
+('SH', N'Sinh học', 1980, 'B31', '0838454545', '004', '10-11-2000'),
+('VL', N'Vật lý', 1976, 'B21', '0838223223', '005', '09-18-2003')
+
+INSERT INTO BOMON(MABM, TENBM, PHONG, DIENTHOAI, TRUONGBM, MAKHOA, NGAYNHANCHUC) VALUES
+(N'CNTT', N'Công nghệ tri thức', N'B15', '0838126126', NULL, 'CNTT', NULL),
+(N'HHC', N'Hóa hữu cơ', N'B44', '0838222222', NULL, 'HH', NULL),
+(N'HL', N'Hóa lý', N'B42', '0838878787', NULL, 'HH', NULL),
+(N'HPT', N'Hóa phân tích', N'B43', '0838777777', '007', 'HH', '10-15-2007'),
+(N'HTTT', N'Hệ thống thông tin', N'B13', '0838125125', '002', 'CNTT', '09-20-2004'),
+(N'MMT', N'Mạng máy tính', N'B16', '0838676767', '001', 'CNTT', '05-15-2005'),
+(N'SH', N'Sinh hóa', N'B33', '0838898989', NULL, 'SH', NULL),
+(N'VLĐT', N'Vật lý điện tử', N'B23', '0838234234', NULL, 'VL', NULL),
+(N'VLƯD', N'Vật lý ứng dụng', N'B24', '0838454545', '005', 'VL', '02-18-2006'),
+(N'VS', N'Vi sinh', N'B32', '0838909090', '004', 'SH', '01-01-2007')
+
+INSERT INTO GV_DT(MAGV, DIENTHOAI) VALUES
+('001', '0838912112'),
+('001', '0903123123'),
+('002', '0913454545'),
+('003', '0838121212'),
+('003', '0903656565'),
+('003', '0937125125'),
+('006', '0937888888'),
+('008', '0653717171'),
+('008', '0913232323')
+
+INSERT INTO NGUOITHAN (MAGV, TEN, NGSINH, PHAI) VALUES
+('001', N'Hùng', '01-14-1990', N'Nam'),
+('001', N'Thủy', '12-08-1994', N'Nữ'),
+('003', N'Hà', '09-03-1998', N'Nữ'),
+('003', N'Thu', '09-03-1998', N'Nữ'),
+('007', N'Mai', '03-26-2003', N'Nữ'),
+('007', N'Vy', '02-14-2000', N'Nữ'),
+('008', N'Nam', '05-06-1991', N'Nam'),
+('009', N'An', '08-19-1996', N'Nam'),
+('010', N'Nguyệt', '01-14-2006', N'Nữ')
+
+INSERT INTO CHUDE(MACD, TENCD) VALUES
+(N'NCPT', N'Nghiên cứu phát triển'),
+(N'QLGD', N'Quản lý giáo dục'),
+(N'ƯDCN', N'Ứng dụng công nghệ')
+
+INSERT INTO DETAI(MADT, TENDT, CAPQL, KINHPHI, NGAYBD, NGAYKT, MACD, GVCNDT) VALUES
+(N'001', N'HTTT quản lý các trường ĐH', N'ĐHQG', 20, '10-20-2007', '10-20-2008', N'QLGD', '002'),
+(N'002', N'HTTT quản lý giáo vụ cho một khoa', N'Trường', 20, '10-12-2000', '10-12-2001', N'QLGD', '002'),
+(N'003', N'Nghiên cứu chế tạo sợi Nanô Platin', N'ĐHQG', 300, '05-15-2008', '05-15-2010', N'NCPT', '005'),
+(N'004', N'Tạo vật liệu sinh học bằng màng ổi người', N'Nhà nước', 100, '01-01-2007', '12-31-2009', N'NCPT', '004'),
+(N'005', N'Ứng dụng hóa học xanh', N'Trường', 200, '10-10-2003', '12-10-2004', N'ƯDCN', '007'),
+(N'006', N'Nghiên cứu tế bào gốc', N'Nhà nước', 4000, '10-20-2006', '10-20-2009', N'NCPT', '004'),
+(N'007', N'HTTT quản lý thư viện ở các trường ĐH', N'Trường', 20, '05-10-2009', '05-10-2010', N'QLGD', '001')
+
+INSERT INTO CONGVIEC(MADT, STT, TENCV, NGAYBD, NGAYKT) VALUES
+(N'001', 1, N'Khởi tạo và lập kế hoạch', '10-20-2007', '12-20-2008'),
+(N'001', 2, N'Xác định yêu cầu', '12-21-2008', '03-21-2008'),
+(N'001', 3, N'Phân tích hệ thống', '03-22-2008', '05-22-2008'),
+(N'001', 4, N'Thiết kế hệ thống', '05-23-2008', '06-23-2008'),
+(N'001', 5, N'Cài đặt thử nghiệm', '06-24-2008', '10-20-2008'),
+(N'002', 1, N'Khởi tạo và lập kế hoạch', '05-10-2009', '07-10-2009'),
+(N'002', 2, N'Xác định yêu cầu', '07-11-2009', '10-11-2009'),
+(N'002', 3, N'Phân tích hệ thống', '10-12-2009', '12-20-2009'),
+(N'002', 4, N'Thiết kế hệ thống', '12-21-2009', '03-22-2010'),
+(N'002', 5, N'Cài đặt thử nghiệm', '03-23-2010', '05-10-2010'),
+(N'006', 1, N'Lấy mẫu', '10-20-2006', '02-20-2007'),
+(N'006', 2, N'Nuôi cấy', '02-21-2007', '08-21-2008')
+
+INSERT INTO THAMGIADT(MAGV, MADT, STT, PHUCAP, KETQUA) VALUES
+('001', N'002', 1, 0.0, NULL),
+('001', N'002', 2, 2.0, NULL),
+('002', N'001', 4, 2.0, N'Đạt'),
+('003', N'001', 1, 1.0, N'Đạt'),
+('003', N'001', 2, 0.0, N'Đạt'),
+('003', N'001', 4, 1.0, N'Đạt'),
+('003', N'002', 4, 0.0, NULL),
+('004', N'006', 1, 0.0, N'Đạt'),
+('004', N'006', 2, 1.0, N'Đạt'),
+('006', N'006', 2, 1.5, N'Đạt'),
+('009', N'002', 3, 0.5, NULL),
+('009', N'002', 4, 1.5, NULL)
+
+UPDATE GIAOVIEN SET MABM = N'MMT' WHERE MAGV IN ('001', '009')
+UPDATE GIAOVIEN SET MABM = N'HTTT' WHERE MAGV IN ('002', '003')
+UPDATE GIAOVIEN SET MABM = N'VS' WHERE MAGV IN ('004', '006')
+UPDATE GIAOVIEN SET MABM = N'VLĐT' WHERE MAGV IN ('005')
+UPDATE GIAOVIEN SET MABM = N'HPT' WHERE MAGV IN ('007', '008', '010')
+
+SELECT MAGV, HOTEN FROM GIAOVIEN WHERE MABM = N'HTTT'
+-- SELECT COLUMN 1, COLUMN2,....
+-- FROM TABLE1, TABLE2,...
+-- WHERE <Dieu kien> --> T/F
+-- ORDER BY
+-- Thứ tự xử lý: FROM -->Where-->Group By --> HAVING --> Select --> Order by
+SELECT MAGV, HOTEN, LUONG FROM GIAOVIEN
+SELECT MAGV, HOTEN, LUONG, MABM FROM GIAOVIEN WHERE MABM = N'HTTT'
+-- * là lấy toàn bộ
+-- So sánh: =, !=, <>, >=, <=,.....
+SELECT * FROM GIAOVIEN WHERE MABM = N'HTTT'
+
+-- Truy vấn với điều kiện liên quan đến chuỗi kí tự: LIKE, %,_[ABC]%[TH],...
+SELECT MAGV, HOTEN, LUONG FROM GIAOVIEN WHERE HOTEN = N'Nguyễn Hoài An'
+SELECT MAGV AS N'Mã giáo viên', HOTEN N'Họ tên giáo viên', LUONG * 1.1 N'Phụ câps' FROM GIAOVIEN WHERE HOTEN LIKE N'Nguyễn'
+-- Không biết chính xác toàn bộ chuỗi dùng Like/NOT LIKE
+SELECT MAGV, HOTEN, LUONG FROM GIAOVIEN WHERE HOTEN LIKE N'%[NH]'
+SELECT MAGV, HOTEN, LUONG FROM GIAOVIEN WHERE HOTEN LIKE N'%___nh'
+
+--TRUY VẤN VỚI ĐIỀU KIỆN LIÊN QUAN ĐẾN NGÀY THÁNG (DATE, DATETIME): 
+--GETDATE(), DAY(d), MONTH(d), YEAR(d)
+--DATEDIFF(yy|mm|dd, d1, d2), 
+--DATEPART(yy|mm|dd, d)
+
+select datediff(dd, '01/19/2022', getdate()),
+       datediff(mm, '01/19/2022', getdate()),
+       datediff(yy, '01/19/2022', getdate()),
+       datediff(hh, '01/19/2022', getdate())
+
+SELECT MAGV N'Mã giáo viên', HOTEN 'Họ và tên',
+       year(getdate() - year(NGSINH)) as TUOI,
+       datediff(yy, NGSINH, GETDATE()) TUOI
+FROM GIAOVIEN 
+
+SELECT * FROM GIAOVIEN
+
+
+SELECT MAGV, HOTEN, datediff(yy, NGSINH, getdate()) AS TUOIGV 
+FROM GIAOVIEN 
+WHERE (datediff(yy, NGSINH, getdate()) > 50) AND (GVQLCM is NULL)
+ORDER BY MAGV ASC
+
+SELECT MAGV, HOTEN, LUONG FROM GIAOVIEN
+WHERE LUONG NOT BETWEEN 2000 and 3000
+
+SELECT MAGV, HOTEN FROM GIAOVIEN
+WHERE YEAR(NGSINH) not in (1973, 1975, 1980)
+
+SELECT MAGV, HOTEN, LUONG, NGSINH FROM GIAOVIEN
+ORDER BY  year(NGSINH) ASC, LUONG DESC
+
+select top 3 * from GIAOVIEN --Lấy 3 dòng đầu tiên của bảng giáo viên
+select top 3 percent * from GIAOVIEN --Lấy 3% số dòng đầu tiên của bảng giáo viên
+
+
+Select bm.MABM, bm.TENBM, bm.MAKHOA, k.TENKHOA 
+From BOMON bm, KHOA k --Tích descartes
+Where bm.makhoa = k.makhoa --Lọc kết quả của phép tích
+Order by bm.MABM
+
+SELECT gv.*, k.TENKHOA
+FROM GIAOVIEN gv join BOMON bm on gv.MABM = bm.MABM 
+                 join KHOA k on k.MAKHOA = bm.MAKHOA
+WHERE k.TENKHOA = N'Công nghệ thông tin'
+
+-- Lấy danh sách công việc có người tham gia
+SELECT cv.*
+FROM CONGVIEC cv, THAMGIADT tg 
+WHERE cv.MADT = tg.MADT and cv.STT = tg.STT
+
+SELECT gv.MAGV, gv.HOTEN AS 'HỌ TEN GIÁO VIÊN', coalesce(gvqlcm.HOTEN, 'X') as HoTenQL
+FROM GIAOVIEN gv LEFT JOIN GIAOVIEN gvqlcm on (gv.MAGV = gvqlcm.GVQLCM)
+
+SELECT MAGV, COUNT(DISTINCT MADT) SLDT
+FROM THAMGIADT
+GROUP BY MAGV 
+-- WHERE MAGV = '001'
+HAVING MAGV = '001'
+SELECT bm.MABM, TENBM, AVG(LUONG) LTB
+FROM GIAOVIEN gv join BOMON bm on gv.MABM = bm.MABM
+GROUP BY bm.MABM, TENBM
+
+SELECT gv.MAGV, gv.HOTEN, dt.capql, count(distinct tg.MADT) as SLDT
+from DETAI dt join THAMGIADT tg on dt.MADT = tg.MADT
+              join GIAOVIEN gv on gv.MAGV = tg.MAGV
+GROUP by gv.MAGV, gv.HOTEN, dt.CAPQL
+order by gv.MAGV

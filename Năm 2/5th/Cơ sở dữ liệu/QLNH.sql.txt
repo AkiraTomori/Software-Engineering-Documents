@@ -1,0 +1,178 @@
+/**********************SCRIPT TAO CSDL QUAN LY NGAN HANG**********************/
+/*****************************************************************************/
+-- ------TAO CSDL---------------------------------------------------------------
+CREATE DATABASE QUANLYNGANHANG;
+GO
+USE QUANLYNGANHANG;
+
+-- ------TAO BANG---------------------------------------------------------------
+-- CHINHANH (macn, tencn, sonha, duong, quan, thanhpho, dienthoai, fax)
+CREATE TABLE CHINHANH (
+	macn		char(10), 
+	tencn		nvarchar(50) not null, 
+	sonha		char(10), 
+	duong		nvarchar(50) not null, 
+	quan		char(20) not null, 
+	thanhpho	nvarchar(20) not null, 
+	dienthoai	char(10), 
+	fax			char(10),
+	constraint	PK_CHINHANH primary key(macn)
+);
+
+-- KHACHHANG (makh, macn, tendangnhap, matkhau, email, hoten, dienthoai, diachi, socmnd)
+CREATE TABLE KHACHHANG (
+	makh		char(10), 
+	macn		char(10), 
+	tendangnhap	char(20) not null, 
+	matkhau		char(20) not null, 
+	email		nchar(50) not null, 
+	hoten		nvarchar(100) not null, 
+	dienthoai	char(10) not null, 
+	diachi		nvarchar(100) not null,
+	socmnd		char(10) not null,
+	constraint	PK_KHACHHANG primary key(makh)
+);
+
+-- LOAITAIKHOAN (maloaitk, tenloaitk, mota, laisuat)
+CREATE TABLE LOAITAIKHOAN (
+	maloaitk	int, 
+	tenloaitk	nvarchar(20) not null, 
+	mota		nvarchar(100), 
+	laisuat		decimal(4,2) default 0,
+	constraint	PK_LOAITAIKHOAN primary key(maloaitk)
+);
+
+-- TAIKHOAN (macn, sotk, makh, loaitk, sodutk)
+CREATE TABLE TAIKHOAN(
+	macn		char(10) not null, 
+	sotk		char(10) not null, 
+	makh		char(10) not null, 
+	loaitk		int not null, 
+	sodutk		decimal(10,2) default 0,
+	constraint	PK_TAIKHOAN primary key(macn, sotk)
+);
+
+-- LOAIGIAODICH (maloaigd, tenloaigd, mota)
+CREATE TABLE LOAIGIAODICH (
+	maloaigd	int, 
+	tenloaigd	nvarchar(20) not null, 
+	mota		nvarchar(300),
+	constraint	PK_LOAIGIAODICH primary key(maloaigd)
+);
+
+-- GIAODICH (magd, macn, sotk, maloaigd, ngaygiogd, tiengd)
+CREATE TABLE GIAODICH (
+	magd		char(30), 
+	macn		char(10) not null, 
+	sotk		char(10) not null, 
+	maloaigd	int not null, 
+	ngaygiogd	datetime not null, 
+	tiengd		decimal(10,2) default 0,
+	constraint	PK_GIAODICH primary key(magd)
+);
+
+-- ------TAO RANG BUOC----------------------------------------------------------
+ALTER TABLE CHINHANH ADD CONSTRAINT UQ_TENCN UNIQUE(TENCN);
+
+ALTER TABLE KHACHHANG ADD CONSTRAINT UQ_TENDN UNIQUE(TENDANGNHAP);
+ALTER TABLE KHACHHANG ADD CONSTRAINT UQ_EMAIL UNIQUE(EMAIL);
+ALTER TABLE KHACHHANG ADD CONSTRAINT UQ_DIENTHOAI UNIQUE(DIENTHOAI);
+ALTER TABLE KHACHHANG ADD CONSTRAINT FK_KHACHHANG_CHINHANH 
+					  FOREIGN KEY(MACN) REFERENCES CHINHANH(MACN);	
+
+ALTER TABLE LOAITAIKHOAN ADD CONSTRAINT UQ_TENLOAITK UNIQUE(TENLOAITK);
+ALTER TABLE LOAITAIKHOAN ADD CONSTRAINT CK_TENLOAITK CHECK
+					(TENLOAITK IN (N'Tài khoản thẻ', N'Tài khoản tiết kiệm', N'Tài khoản tín dụng'));
+
+ALTER TABLE TAIKHOAN ADD CONSTRAINT FK_TAIKHOAN_CHINHANH
+					  FOREIGN KEY(MACN) REFERENCES CHINHANH(MACN);
+ALTER TABLE TAIKHOAN ADD CONSTRAINT FK_TAIKHOAN_KHACHHANG
+					  FOREIGN KEY(MAKH) REFERENCES KHACHHANG(MAKH);					  
+ALTER TABLE TAIKHOAN ADD CONSTRAINT FK_TAIKHOAN_LOAITAIKHOAN
+					  FOREIGN KEY(LOAITK) REFERENCES LOAITAIKHOAN(MALOAITK);
+					  				  
+ALTER TABLE LOAIGIAODICH ADD CONSTRAINT UQ_TENLOAIGD UNIQUE(TENLOAIGD);
+ALTER TABLE LOAIGIAODICH ADD CONSTRAINT CK_TENLOAIGD CHECK
+					(TENLOAIGD IN (N'Rút tiền', N'Chuyển khoản', N'Nạp tiền'));
+
+					  
+ALTER TABLE GIAODICH ADD CONSTRAINT FK_GIAODICH_TAIKHOAN
+					  FOREIGN KEY(MACN, SOTK) REFERENCES TAIKHOAN(MACN, SOTK); 
+ALTER TABLE GIAODICH ADD CONSTRAINT FK_GIAODICH_LOAIGIAODICH
+					  FOREIGN KEY(MALOAIGD) REFERENCES LOAIGIAODICH(MALOAIGD); 	
+
+				  
+			  				 				  			
+-- ------THEM DU LIEU-----------------------------------------------------------
+-- CHINHANH (macn, tencn, sonha, duong, quan, thanhpho, dienthoai, fax)
+INSERT INTO CHINHANH VALUES
+('CN001', N'Thành Đô', '121/2B', N'Hoàng Văn Thụ', N'Phú Nhuận', N'TP.HCM', '38112343', '38112344');
+INSERT INTO CHINHANH VALUES
+('CN002', N'An Bình', '433', N'Nguyễn Thị Minh Khai', N'Quận 1', N'TP.HCM', '38112326', '38112327');
+INSERT INTO CHINHANH VALUES
+('CN003', N'Bình Thạnh', '509', N'Bình Quới', N'Bình Thạnh', N'TP.HCM', '38112322', '38112323');
+
+-- KHACHHANG (makh, macn, tendangnhap, matkhau, email, hoten, dienthoai, diachi, socmnd)
+INSERT INTO KHACHHANG VALUES
+('KH00001', 'CN001', 'kitty', '21341', 'kitty@gmail.com', N'Nguyễn Bình Minh', '0921998281', N'12 Lê Lợi, Q1, TP.HCM', '0231998212');
+INSERT INTO KHACHHANG VALUES
+('KH00002', 'CN001', 'quala', '2ewwr', 'quala@gmail.com', N'Nguyễn Thanh Ngọc', '0949828281', N'132 Bùi Thị Xuân, Q2, TP.HCM', '0231990231');
+INSERT INTO KHACHHANG VALUES
+('KH00003', 'CN001', 'mocmoc', 'kdi111', 'abc@gmail.com', N'Lê Phú Cường', '0921994982', N'512 Nguyễn Thị Diệu, Q2, TP.HCM', '0231999023');
+INSERT INTO KHACHHANG VALUES
+('KH00004', 'CN002', 'beauty', 'saocungduoc', 'ak@gmail.com', N'Đặng Ngọc My', '0921991994', N'412 Nam Kì Khởi Nghĩa, Q3, TP.HCM', '0231999822');
+INSERT INTO KHACHHANG VALUES
+('KH00005', 'CN002', 'xuxu', 'khongco', 'xuxu@gmail.com', N'Hoàng Cẩm An', '0921909211', N'598 Lê Quý Đôn, Q3, TP.HCM', '0231998212');
+INSERT INTO KHACHHANG VALUES
+('KH00006', 'CN003', 'bedieu', 'dfsdfsdfds', 'bedieu@gmail.com', N'Đặng Thảo Quỳnh', '0923333994', N'222 Nguyễn Xí, Q.Bình Thạnh, TP.HCM', '0231987622');
+INSERT INTO KHACHHANG VALUES
+('KH00007', 'CN003', 'lyly', 'didau', 'lyly@gmail.com', N'Lê Thành Công', '0921901234', N'598 Xô Viết Nghệ Tĩnh, Q.Bình Thạnh, TP.HCM', '0231990009');
+
+
+-- LOAITAIKHOAN (maloaitk, tenloaitk, mota, laisuat)
+INSERT INTO LOAITAIKHOAN(maloaitk, tenloaitk, laisuat) VALUES (1, N'Tài khoản thẻ', 0);
+INSERT INTO LOAITAIKHOAN(maloaitk, tenloaitk, laisuat) VALUES (2, N'Tài khoản tiết kiệm', 0.4);
+INSERT INTO LOAITAIKHOAN(maloaitk, tenloaitk, laisuat) VALUES (3, N'Tài khoản tín dụng', 0.2);
+
+
+-- TAIKHOAN (macn, sotk, makh, loaitk, sodutk)
+INSERT INTO TAIKHOAN VALUES('CN001','0010000111', 'KH00001', 1, 100000);
+INSERT INTO TAIKHOAN VALUES('CN001','0010000121', 'KH00001', 2, 120000);
+INSERT INTO TAIKHOAN VALUES('CN001','0010000211', 'KH00002', 1, 500000);
+INSERT INTO TAIKHOAN VALUES('CN001','0010000231', 'KH00002', 3, 103000);
+INSERT INTO TAIKHOAN VALUES('CN001','0010000311', 'KH00003', 1, 233000);
+INSERT INTO TAIKHOAN VALUES('CN002','0020000411', 'KH00004', 1, 600000);
+INSERT INTO TAIKHOAN VALUES('CN002','0020000511', 'KH00005', 1, 700000);
+INSERT INTO TAIKHOAN VALUES('CN003','0030000611', 'KH00006', 1, 230000);
+INSERT INTO TAIKHOAN VALUES('CN003','0030000621', 'KH00006', 2, 230000);
+INSERT INTO TAIKHOAN VALUES('CN003','0030000631', 'KH00006', 3, 230000);
+INSERT INTO TAIKHOAN VALUES('CN003','0030000711', 'KH00007', 1, 900000);
+INSERT INTO TAIKHOAN VALUES('CN003','0030000721', 'KH00007', 2, 900000);
+INSERT INTO TAIKHOAN VALUES('CN003','0030000731', 'KH00007', 3, 900000);
+
+-- LOAIGIAODICH (maloaigd, tenloaigd, mota)
+INSERT INTO LOAIGIAODICH VALUES (1, N'Rút tiền', NULL);
+INSERT INTO LOAIGIAODICH VALUES (2, N'Chuyển khoản', NULL);
+INSERT INTO LOAIGIAODICH VALUES (3, N'Nạp tiền', NULL);
+
+-- GIAODICH (magd, macn, sotk, maloaigd, ngaygiogd, tiengd)
+INSERT INTO GIAODICH VALUES('202409281333550010000111','CN001','0010000111', 1, '2024-09-28 13:33:55', 1000);
+INSERT INTO GIAODICH VALUES('202411281333550010000121','CN001','0010000121', 2, '2024-11-28 13:33:55', 1200);
+INSERT INTO GIAODICH VALUES('202410121333550010000211','CN001','0010000211', 1, '2024-10-12 13:33:55', 5000);
+INSERT INTO GIAODICH VALUES('202409111233550010000231','CN001','0010000231', 3, '2024-09-11 12:33:55', 1030);
+INSERT INTO GIAODICH VALUES('202309050733550010000311','CN001','0010000311', 1, '2023-09-05 07:33:55', 2330);
+INSERT INTO GIAODICH VALUES('202312281033550020000411','CN002','0020000411', 1, '2023-12-28 10:33:55', 6000);
+INSERT INTO GIAODICH VALUES('202308191133550020000511','CN002','0020000511', 1, '2023-08-19 11:33:55', 7000);
+INSERT INTO GIAODICH VALUES('202309221533550030000611','CN003','0030000611', 1, '2023-09-22 15:33:55', 2300);
+INSERT INTO GIAODICH VALUES('202209211633550030000621','CN003','0030000621', 2, '2022-09-21 16:33:55', 2300);
+INSERT INTO GIAODICH VALUES('202301201533550030000631','CN003','0030000631', 3, '2023-01-20 15:33:55', 2300);
+INSERT INTO GIAODICH VALUES('202404121133550030000711','CN003','0030000711', 1, '2024-04-12 11:33:55', 9000);
+INSERT INTO GIAODICH VALUES('202302080933550030000721','CN003','0030000721', 2, '2023-02-08 09:33:55', 9000);
+INSERT INTO GIAODICH VALUES('202302181033550030000731','CN003','0030000731', 3, '2023-02-18 10:33:55', 9000);
+
+SELECT * FROM CHINHANH;
+SELECT * FROM KHACHHANG;
+SELECT * FROM LOAITAIKHOAN;
+SELECT * FROM TAIKHOAN;
+SELECT * FROM LOAIGIAODICH;
+SELECT * FROM GIAODICH;

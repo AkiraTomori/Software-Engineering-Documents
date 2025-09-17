@@ -1,0 +1,75 @@
+--truy vấn lồng--------- sub-query lồng vào 1 mệnh đề truy vấn cha
+--XUẤT:select (sub-query (sub-query)) -> trả bảng chỉ trả 1 giá trị 
+--TẠO BẢNG: from (sub-query) -> trả bảng có thể có nhiều cột, nhiều dòng (
+--------------------> có đủ tên cột, tên bảng
+--ĐIỀU KIỆN: where (sub-query) -> trả bảng tham gia điều kiện/ bảng là điều kiện
+--group by 
+--ĐIỀU KIỆN TRÊN NHÓM(MIN,MAX,AVG,SUM,COUNT):having (sub-query) -> tham gia điều kiện/ là điều kiện (trên nhóm)
+--order by 
+----truy vấn lồng phân cấp--------------
+--sub-query không truy xuất thuộc tính cha
+--vd: cho biết giáo viên không có người thân (WHERE)
+SELECT GV.*
+FROM GIAOVIEN GV
+WHERE GV.MAGV NOT IN (SELECT MAGV
+					FROM NGUOITHAN)
+--vd: cho biết giáo viên và số lượng đề tài chủ nhiệm
+--(FROM)
+SELECT GV.*,DT.SL
+FROM GIAOVIEN GV JOIN (SELECT GVCNDT, COUNT(MADT) SL
+						FROM DETAI DT
+						GROUP BY DT.GVCNDT) DT
+ON GV.MAGV = DT.GVCNDT
+
+--vd: cho biết giáo viên có lương lớn nhất
+SELECT GV.*
+FROM GIAOVIEN GV
+WHERE GV.LUONG = (SELECT MAX(LUONG)
+					FROM GIAOVIEN)
+--ALL/ ANY/SOME
+--= ~ IN / = ANY
+--<> ~ NOT IN / <> ALL
+--> 
+--vd: cho biết giáo viên chủ nhiệm nhiều đề tài nhất
+SELECT GVCNDT
+FROM DETAI DT
+GROUP BY DT.GVCNDT
+HAVING COUNT (MADT) >= ALL (SELECT COUNT (MADT)
+							FROM DETAI DT
+							GROUP BY DT.GVCNDT)
+----truy vấn lồng tương quan-------------
+--sub-query truy xuất thuộc tính của bảng trong truy vấn cha
+--vd: cho biết giáo viên không có người thân
+SELECT GV.*
+FROM GIAOVIEN GV
+WHERE NOT EXISTS (SELECT *
+					FROM NGUOITHAN
+					WHERE MAGV = GV.MAGV)
+--vd: cho biết giáo viên và số lượng đề tài chủ nhiệm
+--(SELECT)
+SELECT GV.*,(SELECT COUNT(MADT)
+			FROM DETAI DT
+			WHERE DT.GVCNDT = GV.MAGV)
+FROM GIAOVIEN GV
+--vd: cho biết giáo viên cùng tên & cùng giới tính với
+--giáo viên khác trong cùng bộ môn
+SELECT GV.*
+FROM GIAOVIEN GV
+WHERE EXISTS (SELECT *
+					FROM GIAOVIEN GV1
+					WHERE MAGV <> GV.MAGV AND
+					GV1.HOTEN = GV.HOTEN AND
+					GV1.PHAI = GV.PHAI AND
+					GV.MABM = GV.MABM)
+
+--vd: cho biết giáo viên tham gia nhiều đề tài nhất trong 
+--từng bộ môn
+SELECT TG.MAGV,GV.MABM,COUNT(DISTINCT TG.MADT)
+FROM THAMGIADT TG JOIN GIAOVIEN GV ON GV.MAGV = TG.MAGV
+GROUP BY TG.MAGV,GV.MABM
+HAVING COUNT(DISTINCT TG.MADT) >= ALL (SELECT COUNT(DISTINCT MADT)
+										FROM THAMGIADT TG1 JOIN 
+										GIAOVIEN GV1 
+										ON GV1.MAGV = TG1.MAGV
+										WHERE GV1.MABM = GV.MABM
+										GROUP BY TG1.MAGV)

@@ -1,0 +1,131 @@
+
+/*GIẢI QUYẾT BÀI TOÁN TÌM TẤT CẢ: "TÌM TẤT CẢ BỘ T TRONG R THOẢ MÃN TẤT CẢ S"
+ - SỐ BỊ CHIA: R(X, Y)
+ - SỐ CHIA: S(Y) (tập con của số bị chia) DSQH thì có phép chia
+ - THƯƠNG: T(X) (tập con của số bị chia)
+ VD1: TÌM GIÁO VIÊN THAM GIA TẤT CẢ ĐỀ TÀI CÓ TÊN ĐỀ TÀI LIÊN QUAN ĐẾN NGHIÊN CỨU.
+T(MAGV),S(MADT): LIÊN QUAN ĐẾN NGHIÊN CỨU
+R(MAGV,MADT) --> THAMGIA
+
+T(MAGV), S(MADT), R(MAGV,MADT) it nhất phải chứa 2 tt 
+ VD2: TÌM GIÁO VIÊN THAM GIA TẤT CẢ CÔNG VIỆC CỦA ĐỀ TÀI 001.
+T(MAGV), S(STT)
+R(MAGV, STT)
+ VD3: TÌM ĐỀ TÀI THUỘC CHỦ ĐỀ "NGHIÊN CỨU" CÓ TẤT CẢ TRƯỞNG BỘ MÔN THAM GIA.
+T(MADT), S(MAGV)
+R(MAGV, MADT): GV tham gia các de tài nghiên cứu
+ VD4: TÌM BỘ MÔN MÀ CÁC ĐỀ TÀI DO CÁC GIÁO VIÊN CỦA BỘ MÔN CHỦ NHIỆM BAO PHỦ TẤT CẢ CHỦ ĐỀ.
+T(TENBM, MABM), S(MACD)
+R(TENBM, MABM, MACD)
+*/
+
+/*
+CÁCH 1: SỬ DỤNG GROUP BY, HAVING CHO BÀI TOÁN PHÉP CHIA (TÌM T THOẢ TẤT CẢ S)
+ - SỐ BỊ CHIA: R(X, Y)
+ - SỐ CHIA: S(Y)
+ - THƯƠNG: T(X)
+SELECT R.X
+FROM R
+GROUP BY R.X ==> TRONG R ĐẾM XEM ỨNG VỚI MỖI BỘ T CÓ BAO NHIÊU BỘ S THOẢ MÃN
+HAVING COUNT(R.Y) = (SELECT COUNT(S.Y) ==> ĐẾM TỔNG SỐ S CÓ
+                     FROM S)
+*/
+
+
+/*VD1: TÌM GIÁO VIÊN THAM GIA TẤT CẢ ĐỀ TÀI 
+        CÓ TÊN ĐỀ TÀI LIÊN QUAN ĐẾN NGHIÊN CỨU.
+T: GIAOVIEN(MAGV)
+S: DETAI(MADT) CÓ TENDT CÓ CHỨA "NGHIÊN CỨU"
+R: THAMGIADT(MAGV, MADT)
+*/
+
+T(MAGV, HOTEN)
+S(MADT) và tên có chứa NGHIÊN CỨU
+R(MAGV, HOTEN, MADT)
+SELECT T.MAGV, T.HOTEN, COUNT(DISTINCT R.MADT) SLDT_NC
+FROM THAMGIADT R JOIN GIAOVIEN T ON R.MAGV = T.MAGV
+                 JOIN DETAI DT ON R.MADT = DT.MADT
+WHERE DT.TENDT LIKE N'%NGHIÊN CỨU%'
+GROUP BY T.MAGV, T.HOTEN -- ĐẾM SỐ ĐỀ TÀI "NGHIÊN CỨU" MỖI GIÁO VIÊN T THAM GIA
+HAVING COUNT(DISTINCT R.MADT) = (SELECT COUNT(S.MADT) -- ĐẾM TỔNG SỐ BỘ ĐỀ TÀI NGHIÊN CỨU CÓ
+                                 FROM DETAI S
+                                 WHERE S.TENDT LIKE N'%NGHIÊN CỨU%')
+
+
+-- THÊM DỮ LIỆU TEST THỬ CHO PHÉP CHIA
+INSERT INTO CONGVIEC(MADT, SOTT, TENCV) VALUES ('003', 1, N'Khảo sát')
+INSERT INTO THAMGIADT VALUES ('004', '003', 1, 2, NULL) 
+
+
+/*
+CÁCH 2: SỬ DỤNG PHÉP TRỪ EXCEPT
+ - SỐ BỊ CHIA: R(X, Y)
+ - SỐ CHIA: S(Y)
+ - THƯƠNG: T(X)
+
+/* TÌM S KHÔNG THOẢ T: NẾU TRUY VẤN CON RA RỖNG (NOT EXISTS TRẢ RA TRUE): T LÀ KẾT QUẢ PHÉP CHIA CẦN TÌM 
+                                                    ==> KHÔNG CÓ S KHÔNG THOẢ T ==> T THOẢ TẤT CẢ S
+                       NÊU TRUY VẤN CON RA ÍT NHẤT 1 DÒNG (NOT EXISTS RA FALSE): T KHÔNG PHẢI KẾT QUẢ PHÉP CHIA CẦN TÌM 
+                                                    ==> CÓ ÍT NHẤT 1 S KHÔNG THOẢ T ==> T KHÔNG THOẢ TẤT CẢ */
+SELECT T.X
+FROM T
+WHERE NOT EXISTS (SELECT S.Y -- LẤY TẤT CẢ Y CÓ
+                  FROM S 
+                  EXCEPT
+                  SELECT R.Y -- LẤY CÁC BỘ Y THOẢ T.X Ở TRUY VẤN CHA
+                  FROM R
+                  WHERE R.X = T.X
+                
+) */
+
+SELECT T.MAGV, T.HOTEN
+FROM GIAOVIEN T
+WHERE NOT EXISTS (SELECT S.MADT -- LẤY TẤT CẢ MÃ ĐỀ TÀI CỦA ĐỀ TÀI CÓ TÊN CHỨA "NGHIÊN CỨU"
+                  FROM DETAI S WHERE S.TENDT LIKE N'%NGHIÊN CỨU%'
+                  EXCEPT
+                  SELECT R.MADT -- LẤY CÁC MÃ ĐỀ TÀI T THAM GIA
+                  FROM THAMGIADT R
+                  WHERE R.MAGV = T.MAGV) -- TRUY VẤN CON TRẢ RA MÃ ĐỀ TÀI T KHÔNG THAM GIA
+      AND EXISTS (SELECT * FROM DETAI S WHERE S.TENDT LIKE N'%NGHIÊN CỨU%') -- KIỂM TRA S KHÁC RỖNG VÌ S RỖNG RA TOÀN BỘ GIÁO VIÊN
+
+
+/*LUYỆN TẬP:
+1. CHO DANH SÁCH GIÁO VIÊN (ma, ten) THAM GIA TẤT CẢ ĐỀ TÀI 
+   DO TRƯỞNG BỘ MÔN HỌ LÀM CHỦ NHIỆM.
+   S:DETAI(MADT) DO TRUONGBM CUA MAGV LA CHU NHIEM 
+   T:GIAOVIEN(MAGV)
+   R:THAMGIA(MAGV, MADT)*/
+SELECT GV.MAGV, GV.HOTEN
+FROM GIAOVIEN GV, THAMGIADT TG, DETAI DT, BOMON BM
+WHERE GV.MAGV = TG.MAGV AND TG.MADT = DT.MADT AND
+      BM.MABM = GV.MABM AND BM.TRUONGBM = DT.GVCNDT
+GROUP BY GV.MAGV, BM.TRUONGBM 
+-- ỨNG VỚI MỖI GV ĐẾN SỐ ĐỀ TÀI DO TRƯỞNG BỘ MÔN GV LÀ CHỦ NHIỆM MÀ GV THAM GIA
+HAVING COUNT(DISTINCT TG.MADT) = (--TỔNG SỐ ĐỀ TÀI DO truong bm cua GV LÀ CHỦ NHIỆM
+                                    SELECT COUNT(*)
+                                    FROM DETAI DT
+                                    WHERE DT.GVCNDT = BM.TRUONGBM) -- LẤY TỪ CHA
+
+--DÙNG NOT EXIST ... EXCEPT
+SELECT GV.MAGV, GV.HOTEN
+FROM GIAOVIEN GV JOIN BOMON BM ON GV.MABM = BM.MABM
+WHERE NOT EXISTS (--LẤY RA MÃ ĐỀ TÀI TRƯỞNG BỘ MÔN GV LÀ CHỦ NHIỆM
+                  SELECT DT.MADT 
+                  FROM DETAI DT
+                  WHERE DT.GVCNDT = BM.TRUONGBM
+                  EXCEPT -- TRỪ ĐI
+                 --LẤY RA MÃ ĐỀ TÀI GV CÓ THAM GIA
+                  SELECT TG.MADT
+                  FROM THAMGIADT TG 
+                  WHERE TG.MAGV = GV.MAGV)
+AND EXISTS (SELECT DT.MADT -- KIEM TRA S KHONG RONG
+            FROM DETAI DT
+            WHERE DT.GVCNDT = BM.TRUONGBM) 
+
+/*3. CHO GIÁO VIÊN MÀ 
+TẤT CẢ CÔNG VIỆC THAM GIA ĐỀU "ĐẠT" 
+--> LƯU Ý: KHÔNG PHẢI CÁC TRUY VẤN CÓ LƯỢNG TỪ TẤT CẢ ĐỀU SỬ DỤNG PHÉP CHIA
+*/
+SELECT * FROM GIAOVIEN GV 
+WHERE NOT EXISTS (SELECT * FROM THAMGIADT TG
+                  WHERE TG.MAGV = GV.MAGV AND TG.KETQUA != N'ĐẠT')
