@@ -1,0 +1,20 @@
+http://www.angelikalanger.com/GenericsFAQ/FAQSections/TypeParameters.html
+What is a type parameter?
+A place holder for a type argument.
+Generic types have one or more type parameters. 
+
+What is a bounded type parameter?
+A type parameter with one or more bounds.  The bounds restrict the set of types that can be used as type arguments and give access to the methods defined by the bounds.
+public class TreeMap<Key extends Comparable<Key> ,Data>{
+It gives access to the methods that the bound specifies .  In the example, the bound Comparable<Key> gives access to the compareTo method that we want to invoke in the implementation of our TreeMap class.
+Only types "within bounds" can be used for instantiation of the generic type.   In the example, a parameterized type such as TreeMap<Number,String> would be rejected, because the type Number is not a subtype of Comparable<Number> .  A parameterized type like TreeMap<String,String> would be accepted, because the type String is within bounds, i.e. is a subtype of Comparable<String> .
+
+
+Comparable vs Comparator
+http://www.geeksforgeeks.org/comparable-vs-comparator-in-java/
+
+Iterator
+https://www.tutorialspoint.com/java/java_using_iterator.htm
+
+Algorithm
+https://www.tutorialspoint.com/java/java_collection_algorithms.htm
