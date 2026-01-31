@@ -1,0 +1,20 @@
+node_modules/
+npm-debug.log
+yarn-error.log
+dist/
+build/
+.env
+.DS_Store
+package-lock.json
+yarn.lock
+coverage/
+logs/
+*.log
+
+# IDE & Editor specific files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln

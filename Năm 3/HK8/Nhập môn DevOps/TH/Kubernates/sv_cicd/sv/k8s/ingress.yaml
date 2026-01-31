@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: node-app-ingress
+  namespace: demo
+  labels:
+    name: node-app-ingress
+rules:
+  - host: demo-node.test.com
+    http:
+      paths:
+        - pathType: Prefix
+          path: "/"
+          backend:
+            service:
+              name: node-app-service
+              port:
+                number: 5000
