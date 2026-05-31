@@ -14,6 +14,7 @@ Vào kỳ 1 năm hai, các bạn từ khoá 2024 sẽ học môn mới là "Tư 
 Môn Cơ sở dữ liệu là môn đã chuyển từ ngôn ngữ tiếng việt sang ngôn ngữ tiếng anh, các bạn cũng lưu ý khi tham khảo môn CSDL vì khoá 2023 trở về trước, môn đó được dạy bằng tiếng việt.
 # Thông tin liên lạc
 Chuyên ngành mà mình đang theo học là Kỹ Thuật Phần Mềm
+
 Các bạn có thể liên hệ với mình thông qua các đường sau:
 Gmail: tmhuy23@clc.fitus.edu.vn
 Facebook: https://www.facebook.com/minhhuy.thai.50
