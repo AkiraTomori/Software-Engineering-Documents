@@ -15,7 +15,7 @@ Môn Cơ sở dữ liệu là môn đã chuyển từ ngôn ngữ tiếng việt
 # Thông tin liên lạc
 Chuyên ngành mà mình đang theo học là Kỹ Thuật Phần Mềm
 
-Các bạn có thể liên hệ với mình thông qua các đường sau:
+Các bạn có thể liên hệ với mình thông qua các đường liên lạc dưới đây:
 - Gmail: tmhuy23@clc.fitus.edu.vn
 - Facebook: https://www.facebook.com/minhhuy.thai.50
 - Mình cũng có link youtube một số video một số môn được yêu cầu quay video: https://www.youtube.com/@minhhuythai8769
